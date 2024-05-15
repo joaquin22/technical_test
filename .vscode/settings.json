@@ -1,0 +1,18 @@
+{
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "pylint.args": [
+        "--load-plugins",
+        "pylint_django",
+        "--disable=C0114,C0115,C0116",
+        "--ignore-patterns=test_*,__inits__.py",
+        "--django-settings-module=core.settings",
+    ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}
