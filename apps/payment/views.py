@@ -1,8 +1,8 @@
 from django.db.models import Sum
 
-from rest_framework import status
-from rest_framework.generics import GenericAPIView
+from rest_framework import status, viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 
 from apps.customer.models import Customer
@@ -12,12 +12,11 @@ from .models import Payment, PaymentDetail
 from .serializers import PaymentSerializer
 
 
-class PaymentView(GenericAPIView):
-
+class PaymentView(viewsets.GenericViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
 
         customer_id = request.data.pop("customer_external_id")
         payment_amount = request.data.pop("payment_amount")
@@ -32,6 +31,7 @@ class PaymentView(GenericAPIView):
             return Response("No active loans", status=status.HTTP_400_BAD_REQUEST)
 
         total_outstanding = loans.aggregate(total=Sum("outstanding"))
+        print(total_outstanding)
         if payment_amount <= total_outstanding["total"]:
 
             payment = Payment.objects.create(
@@ -40,7 +40,7 @@ class PaymentView(GenericAPIView):
                 **request.data,
             )
 
-            payment_amount_tmp = payment_amount  # 100
+            payment_amount_tmp = payment_amount
 
             for loan in loans:
 
@@ -49,7 +49,8 @@ class PaymentView(GenericAPIView):
 
                 loan_payment = 0
 
-                result = payment_amount_tmp - loan.outstanding
+                result = payment_amount_tmp - loan.outstanding  # 700 - 500 = 200
+
                 if result >= 0:
                     payment_amount_tmp = result
                     loan_payment = loan.outstanding
@@ -74,20 +75,32 @@ class PaymentView(GenericAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         else:
-            return Response("Insufficient funds", status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                "Payment_amount is greater than total outstanding",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-    def get(self, request, *args, **kwargs):
-        customer_id = kwargs.get("customer_id")
-        customer = Customer.objects.get(pk=customer_id)
+    @action(detail=True, methods=["get"])
+    def payment_by_customer(self, request, pk=None):
+        customer = Customer.objects.get(external_id=pk)
         payments = Payment.objects.filter(customer=customer).all()
         serializer = self.get_serializer(payments, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"])
+    def reject_payment(self, request, pk=None):
+        payment = Payment.objects.get(external_id=pk)
+        payment.status = Payment.Status.REJECTED
+        payment_detail = payment.details.all()
 
-# POST
-# {external_id, customer_external_id, loan_external_id,payment_amount}
+        loans_ids = payment_detail.values_list("loan__external_id", flat=True)
+        loans = Loan.objects.filter(external_id__in=loans_ids).all()
 
-# GET
-# [
-#     {external_id, customer_external_id, loan_external_id,payment_amount,date,status,total_amount}
-# ]
+        for loan in loans:
+            loan.status = Loan.Status.ACTIVE
+            amount = payment_detail.get(loan=loan).amount
+            loan.outstanding = amount
+            loan.save()
+
+        payment.save()
+        return Response("OK")

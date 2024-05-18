@@ -6,7 +6,12 @@ from .views import PaymentView
 app_name = "payment"
 
 
-urlpatterns = [
-    path("payment/", PaymentView.as_view(), name="payment"),
-    path("payment/<int:customer_id>/", PaymentView.as_view(), name="payment"),
-]
+router = routers.DefaultRouter()
+router.register(r"payment", PaymentView, basename="payment")
+
+urlpatterns = [path("", include(router.urls))]
+
+# urlpatterns = [
+#     path("payment/", PaymentView.as_view(), name="payment"),
+#     # path("payment/<slug:customer_id>/", PaymentView.as_view(), name="payment"),
+# ]
