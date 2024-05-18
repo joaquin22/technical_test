@@ -3,6 +3,7 @@ import datetime
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework_api_key.permissions import HasAPIKey
 
 from apps.customer.models import Customer
 
@@ -14,6 +15,7 @@ class LoanViewSet(viewsets.ModelViewSet):
 
     queryset = Loan.objects.all()
     serializer_class = LoanSerializer
+    permission_classes = [HasAPIKey]
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):

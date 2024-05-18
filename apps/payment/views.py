@@ -3,6 +3,7 @@ from django.db.models import Sum
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework_api_key.permissions import HasAPIKey
 
 
 from apps.customer.models import Customer
@@ -15,6 +16,7 @@ from .serializers import PaymentSerializer
 class PaymentView(viewsets.GenericViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    permission_classes = [HasAPIKey]
 
     def create(self, request, *args, **kwargs):
 

@@ -17,6 +17,11 @@ class CustomerViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerSerializer
     permission_classes = [HasAPIKey]
 
+    def retrieve(self, request, *args, **kwargs):
+        customer = Customer.objects.get(external_id=kwargs["pk"])
+        serializer = self.get_serializer(customer)
+        return Response(serializer.data)
+
     @action(detail=True, methods=["get"])
     def balance(self, request, pk=None):
         customer = Customer.objects.get(external_id=pk)
