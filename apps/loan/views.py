@@ -17,7 +17,7 @@ class LoanViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
-        loan = Loan.objects.get(pk=pk)
+        loan = Loan.objects.get(external_id=pk)
 
         if loan.status == Loan.Status.PENDING:
             loan.status = Loan.Status.ACTIVE
@@ -27,9 +27,20 @@ class LoanViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(loan)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        loan = Loan.objects.get(external_id=pk)
+
+        if loan.status == Loan.Status.PENDING:
+            loan.status = Loan.Status.REJECTED
+            loan.save()
+
+        serializer = self.get_serializer(loan)
+        return Response(serializer.data)
+
     @action(detail=True, methods=["get"])
     def loan_by_customer(self, request, pk=None):
-        customer = Customer.objects.get(pk=pk)
+        customer = Customer.objects.get(external_id=pk)
 
         loans = Loan.objects.filter(customer=customer).all()
 
