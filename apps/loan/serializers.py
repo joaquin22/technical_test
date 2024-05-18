@@ -17,6 +17,13 @@ class LoanSerializer(serializers.ModelSerializer):
             "status",
         ]
 
+    def validate(self, attrs):
+        customer = Customer.objects.get(external_id=attrs["customer_external_id"])
+        amount = attrs["amount"]
+        if amount > customer.score:
+            raise serializers.ValidationError("Insufficient funds for this loan")
+        return super().validate(attrs)
+
     def create(self, validated_data):
         customer_external_id = validated_data.pop("customer_external_id")
         customer = Customer.objects.get(external_id=customer_external_id)
