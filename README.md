@@ -45,6 +45,8 @@ Si deseas ejecutar el proyecto en tu máquina local, asegúrate de tener instala
 
 El proyecto estará disponible en http://localhost:8000.
 
+La documentación de Django está disponible en http://localhost:8000/api-docs/.
+
 
 ## Ejecución de pruebas
 

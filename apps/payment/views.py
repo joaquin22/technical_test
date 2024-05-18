@@ -17,6 +17,7 @@ class PaymentView(viewsets.GenericViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     permission_classes = [HasAPIKey]
+    http_method_names = ["get", "post"]
 
     def create(self, request, *args, **kwargs):
 

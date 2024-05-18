@@ -16,6 +16,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     permission_classes = [HasAPIKey]
+    http_method_names = ["get", "post"]
 
     def retrieve(self, request, *args, **kwargs):
         customer = Customer.objects.get(external_id=kwargs["pk"])

@@ -16,6 +16,7 @@ class LoanViewSet(viewsets.ModelViewSet):
     queryset = Loan.objects.all()
     serializer_class = LoanSerializer
     permission_classes = [HasAPIKey]
+    http_method_names = ["get", "post"]
 
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):
