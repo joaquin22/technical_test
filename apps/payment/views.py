@@ -14,10 +14,18 @@ from .serializers import PaymentSerializer
 
 
 class PaymentView(viewsets.GenericViewSet):
+    """
+
+    create: Create a new payment
+    payment_by_customer: Return a list of payments by customer use the {customer_external_id} as parameter
+    reject_payment: Reject a payment use the {external_id} as parameter
+    """
+
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     permission_classes = [HasAPIKey]
     http_method_names = ["get", "post"]
+    lookup_field = "external_id"
 
     def create(self, request, *args, **kwargs):
 
@@ -34,7 +42,7 @@ class PaymentView(viewsets.GenericViewSet):
             return Response("No active loans", status=status.HTTP_400_BAD_REQUEST)
 
         total_outstanding = loans.aggregate(total=Sum("outstanding"))
-        print(total_outstanding)
+
         if payment_amount <= total_outstanding["total"]:
 
             payment = Payment.objects.create(
@@ -77,22 +85,21 @@ class PaymentView(viewsets.GenericViewSet):
             serializer = self.get_serializer(payment)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        else:
-            return Response(
-                "Payment_amount is greater than total outstanding",
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return Response(
+            "Payment_amount is greater than total outstanding",
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     @action(detail=True, methods=["get"])
-    def payment_by_customer(self, request, pk=None):
-        customer = Customer.objects.get(external_id=pk)
+    def payment_by_customer(self, request, external_id=None):
+        customer = Customer.objects.get(external_id=external_id)
         payments = Payment.objects.filter(customer=customer).all()
         serializer = self.get_serializer(payments, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
-    def reject_payment(self, request, pk=None):
-        payment = Payment.objects.get(external_id=pk)
+    def reject_payment(self, request, external_id=None):
+        payment = Payment.objects.get(external_id=external_id)
         payment.status = Payment.Status.REJECTED
         payment_detail = payment.details.all()
 

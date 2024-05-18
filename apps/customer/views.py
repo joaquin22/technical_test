@@ -12,20 +12,27 @@ from .serializers import CustomerSerializer
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
+    """
+    list: Return a list of customers
+    retrieve: Return a single customer use the {external_id} as parameter
+    create: Create a new customer
+    balance: Return the balance of a customer use the {external_id} as parameter
+    """
 
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     permission_classes = [HasAPIKey]
     http_method_names = ["get", "post"]
+    lookup_field = "external_id"
 
     def retrieve(self, request, *args, **kwargs):
-        customer = Customer.objects.get(external_id=kwargs["pk"])
+        customer = Customer.objects.get(external_id=kwargs["external_id"])
         serializer = self.get_serializer(customer)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
-    def balance(self, request, pk=None):
-        customer = Customer.objects.get(external_id=pk)
+    def balance(self, request, external_id=None):
+        customer = Customer.objects.get(external_id=external_id)
         outstanding_sum = Loan.objects.filter(
             Q(status=Loan.Status.ACTIVE) | Q(status=Loan.Status.PENDING),
             customer=customer,

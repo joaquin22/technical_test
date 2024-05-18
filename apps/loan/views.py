@@ -12,15 +12,24 @@ from .serializers import LoanSerializer
 
 
 class LoanViewSet(viewsets.ModelViewSet):
+    """
+    list: Return a list of loans
+    create: Create a new loan
+    read: Return a single loan use the {external_id} as parameter
+    loan_by_customer: Return a list of loans by customer use the {customer_external_id} as parameter
+    activate: Activate a loan use the {external_id} as parameter
+    reject: Reject a loan use the {external_id} as parameter
+    """
 
     queryset = Loan.objects.all()
     serializer_class = LoanSerializer
     permission_classes = [HasAPIKey]
     http_method_names = ["get", "post"]
+    lookup_field = "external_id"
 
     @action(detail=True, methods=["post"])
-    def activate(self, request, pk=None):
-        loan = Loan.objects.get(external_id=pk)
+    def activate(self, request, external_id=None):
+        loan = Loan.objects.get(external_id=external_id)
 
         if loan.status == Loan.Status.PENDING:
             loan.status = Loan.Status.ACTIVE
@@ -31,8 +40,8 @@ class LoanViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
-    def reject(self, request, pk=None):
-        loan = Loan.objects.get(external_id=pk)
+    def reject(self, request, external_id=None):
+        loan = Loan.objects.get(external_id=external_id)
 
         if loan.status == Loan.Status.PENDING:
             loan.status = Loan.Status.REJECTED
@@ -42,8 +51,8 @@ class LoanViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
-    def loan_by_customer(self, request, pk=None):
-        customer = Customer.objects.get(external_id=pk)
+    def loan_by_customer(self, request, external_id=None):
+        customer = Customer.objects.get(external_id=external_id)
 
         loans = Loan.objects.filter(customer=customer).all()
 
