@@ -285,6 +285,20 @@ files = [
 django = ">=3.0"
 
 [[package]]
+name = "djangorestframework-api-key"
+version = "3.0.0"
+description = "API key permissions for the Django REST Framework"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "djangorestframework-api-key-3.0.0.tar.gz", hash = "sha256:f18cdfa45aaea10fd4daaebffa60481ce4002c9b9ef6c551ef1fc21dadf28845"},
+    {file = "djangorestframework_api_key-3.0.0-py3-none-any.whl", hash = "sha256:b9443cd864e43caebdd330224f9309957b38128267fbc9dc1ba2f3fa1c8414d0"},
+]
+
+[package.dependencies]
+packaging = "*"
+
+[[package]]
 name = "idna"
 version = "3.7"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -678,4 +692,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "fbb2c5e8a8e4a83baa9672db1675c5935189798b79645770a5fa4157649454c7"
+content-hash = "e4b404e83cd6cad636482cc6058af35469af1771692d883361e33d0fab561998"
